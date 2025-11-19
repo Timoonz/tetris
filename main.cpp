@@ -13,6 +13,8 @@
 #include "navigationcontrols.h"
 
 
+//the models
+#include "models/tetrominos.h"
 
 using namespace std;
 
@@ -94,86 +96,13 @@ int main()
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    vector<glm::vec3> g_vertex_buffer_data = {
-        glm::vec3(-1.0f,-1.0f,-1.0f), // triangle 1 : begin
-        glm::vec3(-1.0f,-1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f), // triangle 1 : end
-        glm::vec3(1.0f, 1.0f,-1.0f), // triangle 2 : begin
-        glm::vec3(-1.0f,-1.0f,-1.0f),
-        glm::vec3(-1.0f, 1.0f,-1.0f), // triangle 2 : end
-        glm::vec3(1.0f,-1.0f, 1.0f),
-        glm::vec3(-1.0f,-1.0f,-1.0f),
-        glm::vec3(1.0f,-1.0f,-1.0f),
-        glm::vec3(1.0f, 1.0f,-1.0f),
-        glm::vec3(1.0f,-1.0f,-1.0f),
-        glm::vec3(-1.0f,-1.0f,-1.0f),
-        glm::vec3(-1.0f,-1.0f,-1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f,-1.0f),
-        glm::vec3(1.0f,-1.0f, 1.0f),
-        glm::vec3(-1.0f,-1.0f, 1.0f),
-        glm::vec3(-1.0f,-1.0f,-1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f,-1.0f, 1.0f),
-        glm::vec3(1.0f,-1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f,-1.0f,-1.0f),
-        glm::vec3(1.0f, 1.0f,-1.0f),
-        glm::vec3(1.0f,-1.0f,-1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f,-1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f,-1.0f),
-        glm::vec3(-1.0f, 1.0f,-1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f,-1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(-1.0f, 1.0f, 1.0f),
-        glm::vec3(1.0f,-1.0f, 1.0f)
-    };
+    vector<glm::vec3> mino_vertex_buffer = mino ;
+    vector<glm::vec3> i_vertex_buffer = right_gun_vertex_buffer_creator();
 
-    vector<glm::vec2> g_uv_buffer_data = {
-        glm::vec2(0.000059f, 1.0f-0.000004f),
-        glm::vec2(0.000103f, 1.0f-0.336048f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(1.000023f, 1.0f-0.000013f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.999958f, 1.0f-0.336064f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.336024f, 1.0f-0.671877f),
-        glm::vec2(0.667969f, 1.0f-0.671889f),
-        glm::vec2(1.000023f, 1.0f-0.000013f),
-        glm::vec2(0.668104f, 1.0f-0.000013f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.000059f, 1.0f-0.000004f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(0.336098f, 1.0f-0.000071f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(0.336024f, 1.0f-0.671877f),
-        glm::vec2(1.000004f, 1.0f-0.671847f),
-        glm::vec2(0.999958f, 1.0f-0.336064f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.668104f, 1.0f-0.000013f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(0.667979f, 1.0f-0.335851f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(0.668104f, 1.0f-0.000013f),
-        glm::vec2(0.336098f, 1.0f-0.000071f),
-        glm::vec2(0.000103f, 1.0f-0.336048f),
-        glm::vec2(0.000004f, 1.0f-0.671870f),
-        glm::vec2(0.336024f, 1.0f-0.671877f),
-        glm::vec2(0.000103f, 1.0f-0.336048f),
-        glm::vec2(0.336024f, 1.0f-0.671877f),
-        glm::vec2(0.335973f, 1.0f-0.335903f),
-        glm::vec2(0.667969f, 1.0f-0.671889f),
-        glm::vec2(1.000004f, 1.0f-0.671847f),
-        glm::vec2(0.667979f, 1.0f-0.335851f)
-    };
+    vector<glm::vec2> g_uv_buffer_data = {} ;
 
-    Object o1(g_vertex_buffer_data, g_uv_buffer_data, path+"/textures/roche.jpg");
-    Object o2(g_vertex_buffer_data, g_uv_buffer_data, path+"/textures/roche.jpg");
+    Object o1(i_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+    Object o2(mino_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
 
 
 /////////////////////////Création de la matrice MVP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +144,7 @@ int main()
         lastTime = currentTime;
 
         //to rotate the cube
-        o1.rotationAngles.y=currentTime;
+        // o1.rotationAngles.y=currentTime;
 
         o2.position.x=5;
 

@@ -10,11 +10,12 @@ file(GLOB SRC_FILES
     "*.h"
     "imgui/*.cpp"
     "imgui/*.h"
-"models/")
+    "models/*.h"
+    "models/*.cpp")
 
 
 add_executable(tp_tetris ${SRC_FILES}
-    models/tetrominos.h models/tetrominos.cpp)
+    models/tetrominos.cpp)
 include(GNUInstallDirs)
 
 target_include_directories(tp_tetris PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
