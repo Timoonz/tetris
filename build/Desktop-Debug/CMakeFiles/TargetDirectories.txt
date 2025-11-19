@@ -1,0 +1,3 @@
+/home/timoonz/Documents/tsi/tp_tetris/tp_tetris/build/Desktop-Debug/CMakeFiles/tp_tetris.dir
+/home/timoonz/Documents/tsi/tp_tetris/tp_tetris/build/Desktop-Debug/CMakeFiles/edit_cache.dir
+/home/timoonz/Documents/tsi/tp_tetris/tp_tetris/build/Desktop-Debug/CMakeFiles/rebuild_cache.dir
