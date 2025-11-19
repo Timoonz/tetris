@@ -15,6 +15,7 @@
 
 //the models
 #include "models/tetrominos.h"
+#include "models/terrain.h"
 
 using namespace std;
 
@@ -97,7 +98,7 @@ int main()
 
 
     vector<glm::vec3> mino_vertex_buffer = mino ;
-    vector<glm::vec3> i_vertex_buffer = right_gun_vertex_buffer_creator();
+    vector<glm::vec3> i_vertex_buffer = terrain_creator();
 
     vector<glm::vec2> g_uv_buffer_data = {} ;
 
