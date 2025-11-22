@@ -63,12 +63,13 @@ vector<glm::vec3> line_vertex_buffer_creator(){
 ///Block : four the_minos in a 2×2 square
 vector<glm::vec3> block_vertex_buffer_creator() {
     vector<glm::vec3> result;
+    //Mino en bas à gauche
     insert_mino(result, 0.0f, 0.0f, 0.0f);
-    //Bottom right the_mino
+    //Mino en bas à droite
     insert_mino(result, 1.0f, 0.0f, 0.0f);
-    //Top right the_mino
+    //Mino en haut à droite
     insert_mino(result, 1.0f, 1.0f, 0.0f);
-    //Top left the_mino
+    //Mino en haut à gauche
     insert_mino(result, 0.0f, 1.0f, 0.0f);
 
     return result;

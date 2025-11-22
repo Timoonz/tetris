@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include "glm/glm.hpp"
 #include <vector>
+#include <algorithm>
 
 #include "vertexbuffer.h"
 #include "vertexarray.h"
@@ -13,11 +14,17 @@
 #include "navigationcontrols.h"
 
 
-//the models
+//Les modèles
 #include "models/tetrominos.h"
 #include "models/terrain.h"
 
+//Le jeu
+#include "game/game.h"
+
 using namespace std;
+
+
+Game tetris;
 
 int main()
 {
@@ -96,8 +103,6 @@ int main()
 
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-    vector<glm::vec3> block_vertex_buffer = line_vertex_buffer_creator();
     vector<glm::vec3> terrain_vertex_buffer = terrain_creator();
 
     // vector<glm::vec2> g_uv_buffer_data = {
@@ -143,27 +148,36 @@ int main()
     vector<glm::vec2> g_uv_buffer_data = {};
 
     //Initialisation du terrain
-    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "");
     //Initialisation de l'objet qui tombe
-    Object o2(block_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+    // Object o2 = tetris.spawn_piece();
 
-    o2.position.y = 12;
-    // o2.position.x = 10;
-    // o2.position.z = 10;
+    // o2.position.y = 12;
+
+    //On spawn une unique pièce pour commencer
+    tetris.spawn_piece();
 
 /////////////////////////Création de la matrice MVP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
     cam.computeMatrices(width, height);
-    glm::mat4 m_terrain = terrain.getModelMatrix();
-    glm::mat4 m2 = o2.getModelMatrix();
+
     glm::mat4 v = cam.getViewMatrix();
     glm::mat4 p = cam.getProjectionMatrix();
 
+    glm::mat4 m_terrain = terrain.getModelMatrix();
     glm::mat4 mvp_terrain = p*v*m_terrain;
-    glm::mat4 mvp2 = p*v*m2;
-
     shader.setUniformMat4f("MVP", mvp_terrain);
-    shader.setUniformMat4f("MVP", mvp2);
+
+    for (auto* piece: tetris.pieces){
+        piece->position.y = 12;
+        glm::mat4 m_piece = piece->getModelMatrix();
+        glm::mat4 mvp = p*v* m_piece;
+        shader.setUniformMat4f("MVP", mvp);
+    };
+
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -191,29 +205,40 @@ int main()
 
         //to rotate the cube
         // o1.rotationAngles.y=currentTime;
+
+
         // pour faire tomber la pièce
-        if (o2.position.y > 1){
-            o2.position.y -= currentTime*0.005;
-        }
+        for (auto* piece: tetris.pieces){
+            if (piece->position.y > 1){
+                piece->position.y -= currentTime*0.005;
+            }
+        };
+
 
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
-        m_terrain = terrain.getModelMatrix();
-        m2 = o2.getModelMatrix();
+
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
 
-        mvp_terrain = p*v*m_terrain;
-        mvp2 = p*v*m2;
 
 
         ////////////////On commence par vider les buffers///////////////
         renderer.Clear();
+        m_terrain = terrain.getModelMatrix();
+        mvp_terrain = p*v*m_terrain;
         shader.setUniformMat4f("MVP", mvp_terrain);
         renderer.Draw(va, terrain, shader);
-        shader.setUniformMat4f("MVP", mvp2);
-        renderer.Draw(va, o2, shader);
+
+        for (auto* piece: tetris.pieces){
+            glm::mat4 m_piece = piece->getModelMatrix();
+            glm::mat4 mvp = p*v* m_piece;
+            shader.setUniformMat4f("MVP", mvp);
+            renderer.Draw(va, *piece, shader);
+
+        };
+
 
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
