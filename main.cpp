@@ -195,6 +195,11 @@ int main()
         if (o2.position.y > 1){
             o2.position.y -= currentTime*0.005;
         }
+        else{
+            cout << o2.position.x << "\n";
+            cout << o2.position.y << "\n";
+            cout << o2.position.z << "\n";
+        }
 
 
         controls.update(deltaTime, &shader);
