@@ -3,6 +3,8 @@
 
 #include "glm/glm.hpp"
 #include <vector>
+#include <functional>
+#include <random>
 
 #include "models/terrain.h"
 #include "models/tetrominos.h"
@@ -20,9 +22,14 @@ class Game
 
         bool needNewPiece;
 
+        //L'unique pièce qui tombe
+        Object* fallingPiece;
 
-        vector<Object*> pieces;
+        //Toutes les pièces qui sont déjà tombées dans le jeu
+        vector<Object*> stackedPieces;
 
+    private:
+        vector<glm::vec3> getRandomTetromino();
 };
 
 #endif // GAME_H

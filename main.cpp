@@ -163,20 +163,25 @@ int main()
 
 
     cam.computeMatrices(width, height);
-
     glm::mat4 v = cam.getViewMatrix();
     glm::mat4 p = cam.getProjectionMatrix();
 
+    //Pour le terrain
     glm::mat4 m_terrain = terrain.getModelMatrix();
     glm::mat4 mvp_terrain = p*v*m_terrain;
     shader.setUniformMat4f("MVP", mvp_terrain);
 
-    for (auto* piece: tetris.pieces){
-        piece->position.y = 12;
-        glm::mat4 m_piece = piece->getModelMatrix();
-        glm::mat4 mvp = p*v* m_piece;
-        shader.setUniformMat4f("MVP", mvp);
-    };
+    //Pour la pièce qui tombe
+    glm::mat4 m_falling = tetris.fallingPiece->getModelMatrix();
+    glm::mat4 mvp_falling = p*v*m_falling;
+    shader.setUniformMat4f("MVP", mvp_falling);
+
+    // for (auto* piece: tetris.pieces){
+    //     piece->position.y = 12;
+    //     glm::mat4 m_piece = piece->getModelMatrix();
+    //     glm::mat4 mvp = p*v* m_piece;
+    //     shader.setUniformMat4f("MVP", mvp);
+    // };
 
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,10 +213,12 @@ int main()
 
 
         // pour faire tomber la pièce
-        for (auto* piece: tetris.pieces){
-            if (piece->position.y > 1){
-                piece->position.y -= currentTime*0.005;
+        if (tetris.fallingPiece->position.y > 1){
+                tetris.fallingPiece->position.y -= currentTime*0.005;
             }
+        else {
+            tetris.stackedPieces.push_back(tetris.fallingPiece);
+                tetris.spawn_piece();
         };
 
 
@@ -231,13 +238,17 @@ int main()
         shader.setUniformMat4f("MVP", mvp_terrain);
         renderer.Draw(va, terrain, shader);
 
-        for (auto* piece: tetris.pieces){
+        for (auto* piece: tetris.stackedPieces){
             glm::mat4 m_piece = piece->getModelMatrix();
             glm::mat4 mvp = p*v* m_piece;
             shader.setUniformMat4f("MVP", mvp);
             renderer.Draw(va, *piece, shader);
-
         };
+
+        m_falling = tetris.fallingPiece->getModelMatrix();
+        mvp_falling = p*v*m_falling;
+        shader.setUniformMat4f("MVP", mvp_falling);
+        renderer.Draw(va, *tetris.fallingPiece, shader);
 
 
 
@@ -248,9 +259,6 @@ int main()
         glfwPollEvents();
     }
     glfwTerminate();
-
-
-
 
     return 0;
 }
