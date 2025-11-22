@@ -148,7 +148,7 @@ int main()
     vector<glm::vec2> g_uv_buffer_data = {};
 
     //Initialisation du terrain
-    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "");
+    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "", PieceType::TERRAIN);
     //Initialisation de l'objet qui tombe
     // Object o2 = tetris.spawn_piece();
 

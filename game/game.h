@@ -20,8 +20,6 @@ class Game
         void spawn_piece();
         void spawn_terrain();
 
-        bool needNewPiece;
-
         //L'unique pièce qui tombe
         Object* fallingPiece;
 
@@ -29,7 +27,8 @@ class Game
         vector<Object*> stackedPieces;
 
     private:
-        vector<glm::vec3> getRandomTetromino();
+        std::pair<vector<glm::vec3>, PieceType>  getRandomTetromino();
+
 };
 
 #endif // GAME_H

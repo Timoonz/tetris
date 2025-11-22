@@ -9,7 +9,8 @@
 
 
 
-Object::Object(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::string texturePath):m_vb(0), m_uvsb(0), m_texture(0), position(0,0,0), rotationAngles(0,0,0)
+Object::Object(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::string texturePath, PieceType type):
+    m_vb(0), m_uvsb(0), m_texture(0), position(0,0,0), rotationAngles(0,0,0), pieceType(type)
 {
 
      m_vb = new VertexBuffer(vertices);
