@@ -97,27 +97,72 @@ int main()
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    vector<glm::vec3> mino_vertex_buffer = mino ;
-    vector<glm::vec3> i_vertex_buffer = terrain_creator();
+    vector<glm::vec3> block_vertex_buffer = right_gun_vertex_buffer_creator();
+    vector<glm::vec3> terrain_vertex_buffer = terrain_creator();
 
-    vector<glm::vec2> g_uv_buffer_data = {} ;
+    // vector<glm::vec2> g_uv_buffer_data = {
+    //     glm::vec2(0.000059f, 1.0f-0.000004f),
+    //     glm::vec2(0.000103f, 1.0f-0.336048f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(1.000023f, 1.0f-0.000013f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.999958f, 1.0f-0.336064f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.336024f, 1.0f-0.671877f),
+    //     glm::vec2(0.667969f, 1.0f-0.671889f),
+    //     glm::vec2(1.000023f, 1.0f-0.000013f),
+    //     glm::vec2(0.668104f, 1.0f-0.000013f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.000059f, 1.0f-0.000004f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(0.336098f, 1.0f-0.000071f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(0.336024f, 1.0f-0.671877f),
+    //     glm::vec2(1.000004f, 1.0f-0.671847f),
+    //     glm::vec2(0.999958f, 1.0f-0.336064f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.668104f, 1.0f-0.000013f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(0.668104f, 1.0f-0.000013f),
+    //     glm::vec2(0.336098f, 1.0f-0.000071f),
+    //     glm::vec2(0.000103f, 1.0f-0.336048f),
+    //     glm::vec2(0.000004f, 1.0f-0.671870f),
+    //     glm::vec2(0.336024f, 1.0f-0.671877f),
+    //     glm::vec2(0.000103f, 1.0f-0.336048f),
+    //     glm::vec2(0.336024f, 1.0f-0.671877f),
+    //     glm::vec2(0.335973f, 1.0f-0.335903f),
+    //     glm::vec2(0.667969f, 1.0f-0.671889f),
+    //     glm::vec2(1.000004f, 1.0f-0.671847f),
+    //     glm::vec2(0.667979f, 1.0f-0.335851f)
 
-    Object o1(i_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
-    Object o2(mino_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+    // } ;
 
+    vector<glm::vec2> g_uv_buffer_data = {};
+
+    //Initialisation du terrain
+    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+    //Initialisation de l'objet qui tombe
+    Object o2(block_vertex_buffer, g_uv_buffer_data, path+"/textures/roche.jpg");
+
+    o2.position.y = 12;
+    // o2.position.x = 10;
+    // o2.position.z = 10;
 
 /////////////////////////Création de la matrice MVP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     cam.computeMatrices(width, height);
-    glm::mat4 m1 = o1.getModelMatrix();
+    glm::mat4 m_terrain = terrain.getModelMatrix();
     glm::mat4 m2 = o2.getModelMatrix();
     glm::mat4 v = cam.getViewMatrix();
     glm::mat4 p = cam.getProjectionMatrix();
 
-    glm::mat4 mvp1 = p*v*m1;
+    glm::mat4 mvp_terrain = p*v*m_terrain;
     glm::mat4 mvp2 = p*v*m2;
 
-    shader.setUniformMat4f("MVP", mvp1);
+    shader.setUniformMat4f("MVP", mvp_terrain);
     shader.setUniformMat4f("MVP", mvp2);
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,26 +191,27 @@ int main()
 
         //to rotate the cube
         // o1.rotationAngles.y=currentTime;
+        // pour faire tomber la pièce
+        if (o2.position.y > 1){
+            o2.position.y -= currentTime*0.005;
+        }
 
-        o2.position.x=5;
 
         controls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
-        m1 = o1.getModelMatrix();
+        m_terrain = terrain.getModelMatrix();
         m2 = o2.getModelMatrix();
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
 
-        mvp1 = p*v*m1;
-
-
+        mvp_terrain = p*v*m_terrain;
         mvp2 = p*v*m2;
 
 
         ////////////////On commence par vider les buffers///////////////
         renderer.Clear();
-        shader.setUniformMat4f("MVP", mvp1);
-        renderer.Draw(va, o1, shader);
+        shader.setUniformMat4f("MVP", mvp_terrain);
+        renderer.Draw(va, terrain, shader);
         shader.setUniformMat4f("MVP", mvp2);
         renderer.Draw(va, o2, shader);
 
