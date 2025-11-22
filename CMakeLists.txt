@@ -11,7 +11,10 @@ file(GLOB SRC_FILES
     "imgui/*.cpp"
     "imgui/*.h"
     "models/*.h"
-    "models/*.cpp")
+    "models/*.cpp"
+    "game/*.h"
+    "game/*.cpp"
+)
 
 
 add_executable(tp_tetris ${SRC_FILES}
