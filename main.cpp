@@ -97,7 +97,7 @@ int main()
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    vector<glm::vec3> block_vertex_buffer = right_gun_vertex_buffer_creator();
+    vector<glm::vec3> block_vertex_buffer = line_vertex_buffer_creator();
     vector<glm::vec3> terrain_vertex_buffer = terrain_creator();
 
     // vector<glm::vec2> g_uv_buffer_data = {
@@ -194,11 +194,6 @@ int main()
         // pour faire tomber la pièce
         if (o2.position.y > 1){
             o2.position.y -= currentTime*0.005;
-        }
-        else{
-            cout << o2.position.x << "\n";
-            cout << o2.position.y << "\n";
-            cout << o2.position.z << "\n";
         }
 
 
