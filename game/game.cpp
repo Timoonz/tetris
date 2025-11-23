@@ -1,18 +1,13 @@
 #include "game.h"
 #include "object.h"
 
-#include <iostream>
-
-
-/////// UNE FONCTION CHECK STATUS QUI CHECK LE STATUS A CHAQUE TOUR DE BOUCLE ?
-
 Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
     this->stackedPieces = {};
     this->fallingPiece = nullptr;
     //On initialise le tableau permettant de tracker les blocs stackés
-    for (int x = 0; x < 12; x++){
-        for (int y = 0; y < 12; y++){
+    for (int x = 0; x < 20; x++){
+        for (int y = 0; y < 14; y++){
             this->board[x][y] = 0;
         }
     }
@@ -78,39 +73,32 @@ std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
 
 
 bool Game::checkCollision(Object* piece){
-    if (piece->position.y <= 0.0f){
-        return true;
-    }
-
     vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
 
-    //On répète le processus pour chaque tétromino
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
         int x_grid = coordinate.x;
         int y_grid = coordinate.y;
         int x_board = x_grid + 6;
 
-        //Si y_grid = 0, alors on a touché le bas du terrain
+        //On teste si la pièce touche le bas de la grille
         if (y_grid <= 0){
             return true;
         }
 
-        //Check des limites horizontales du terrain
-        // if (x_board < 0 || x_board >= 12){
-        //     return true;
-        // }
-
-        //On regarde si la case en-dessous n'est pas en dehors de la grille
-        if (y_grid - 1 < 0 || y_grid - 1 >= 12){
-            continue;
+        //On teste si la pièce touche les bords
+        if (x_board < 1 || x_board >= 11){
+            return true;
         }
 
-        //On récupère la valeur de la cellule en-dessous
-        int cellValue = this->board[y_grid - 1][x_board];
-
-        //Si la valeur est autre que 0, alors c'est que la cellule est prise: il ya collision
-        if (cellValue != 0){
-            return true;
+        //On check la collision avec les pièces déjà stackées
+        //Seulement si on est dans les clous
+        if (y_grid >= 0 && y_grid < 12) {
+            if (x_board >= 0 && x_board < 12) {
+                int cellValue = this->board[y_grid][x_board];
+                if (cellValue != 0){
+                    return true;
+                }
+            }
         }
     }
 
@@ -118,10 +106,31 @@ bool Game::checkCollision(Object* piece){
 }
 
 void Game::lockPiece(Object* piece){
+
     vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+
+    //On met la pièce sur une coordonée y entière
+    fallingPiece->position.y = round(fallingPiece->position.y);
+    //En revanche si la pièce rentre en collision avec le bas du plateau, on la remet un cran au-dessus
+    bool onFloor = false;
+    for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+        int y_grid = coordinate.y;
+        if (y_grid == 0){
+            onFloor = true;
+            break;
+        }
+    }
+    if (onFloor){
+        for(GridCoordinates& coordinate : tetrominoGridCoordinates){
+            coordinate.y += 1;
+        }
+        fallingPiece->position.y += 1.0f;
+    }
+
 
 
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+
         int x_grid = coordinate.x;
         int y_grid = coordinate.y;
         int x_board = x_grid + 6;
@@ -135,9 +144,7 @@ void Game::lockPiece(Object* piece){
             block.owner = piece;
             this->placedBlocks.push_back(block);
         }
-        /*else { //Fonction utilisée pour le débugage, je la garde pour l'instant au cas où
-            std::cout << "  -> OUT OF BOUNDS, NOT LOCKED!" << std::endl;
-        }*/
+
     }
 
     //On rajoute à la liste des pièces stackées

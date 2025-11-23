@@ -67,18 +67,18 @@ void NavigationControls::update(float deltaTime, Shader *shader)
         if (glfwGetKey(m_Window, GLFW_KEY_W ) == GLFW_PRESS){
             m_Camera->position += direction * deltaTime * speed;
         }
-        // Move backward
-        if (glfwGetKey(m_Window, GLFW_KEY_S ) == GLFW_PRESS){
-            m_Camera->position -= direction * deltaTime * speed;
-        }
-        // Strafe right
-        if (glfwGetKey(m_Window, GLFW_KEY_D ) == GLFW_PRESS){
-            m_Camera->position += right * deltaTime * speed;
-        }
-        // Strafe left
-        if (glfwGetKey(m_Window, GLFW_KEY_A ) == GLFW_PRESS){
-            m_Camera->position -= right * deltaTime * speed;
-        }
+        // // Move backward
+        // if (glfwGetKey(m_Window, GLFW_KEY_S ) == GLFW_PRESS){
+        //     m_Camera->position -= direction * deltaTime * speed;
+        // }
+        // // Strafe right
+        // if (glfwGetKey(m_Window, GLFW_KEY_D ) == GLFW_PRESS){
+        //     m_Camera->position += right * deltaTime * speed;
+        // }
+        // // Strafe left
+        // if (glfwGetKey(m_Window, GLFW_KEY_A ) == GLFW_PRESS){
+        //     m_Camera->position -= right * deltaTime * speed;
+        // }
         // go up
         if (glfwGetKey(m_Window, GLFW_KEY_SPACE ) == GLFW_PRESS){
             m_Camera->position += up * deltaTime * speed;
