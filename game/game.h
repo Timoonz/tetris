@@ -50,6 +50,8 @@ class Game
         //Une fonction pour bloquer une pièce une fois qu'elle est rentrée en collision avec une autre
         void lockPiece(Object* piece);
 
+        bool detectLine(int y);
+
 
     private:
         std::pair<vector<glm::vec3>, PieceType>  getRandomTetromino();

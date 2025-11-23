@@ -1,6 +1,9 @@
 #include "game.h"
 #include "object.h"
 
+//Pour débugger
+#include <iostream>
+
 Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
     this->stackedPieces = {};
@@ -106,7 +109,6 @@ bool Game::checkCollision(Object* piece){
 }
 
 void Game::lockPiece(Object* piece){
-
     vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
 
     //On met la pièce sur une coordonée y entière
@@ -127,8 +129,6 @@ void Game::lockPiece(Object* piece){
         fallingPiece->position.y += 1.0f;
     }
 
-
-
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
 
         int x_grid = coordinate.x;
@@ -144,7 +144,13 @@ void Game::lockPiece(Object* piece){
             block.owner = piece;
             this->placedBlocks.push_back(block);
         }
+    }
 
+    //On scan pour savoir si une ligne est pleine
+    for (int rang = 12; rang > 0; rang--){
+        if (detectLine(rang)){
+            // std::cout << "LINE " << rang << " FULL\n";
+        }
     }
 
     //On rajoute à la liste des pièces stackées
@@ -210,6 +216,16 @@ vector<GridCoordinates> Game::getPositionsMinos(Object* piece){
     }
 
     return result;
+}
+
+bool Game::detectLine(int y){
+    int count = 0;
+    for (int x = 0; x <12; x++){
+        if (board[y][x] != 0){
+            count++;
+        }
+    }
+    return (count == 10);
 }
 
 

@@ -225,6 +225,7 @@ int main()
                 if (tetris.checkCollision(tetris.fallingPiece)) {
                     // Move back up and lock
                     tetris.fallingPiece->position.y += 1.0f;
+                    // std::cout << "AAAAAAA";
                     tetris.lockPiece(tetris.fallingPiece);
                 }
             }
