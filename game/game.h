@@ -43,8 +43,9 @@ class Game
         bool needNewPiece;
 
         //Une fonction pour checker si une pièce (celle qui tombe)
-        //rentre en collision avec celles déjà stackées
+        //rentre en collision avec celles déjà stackées et le bord du terrain
         bool checkCollision(Object* piece);
+
 
         //Une fonction pour bloquer une pièce une fois qu'elle est rentrée en collision avec une autre
         void lockPiece(Object* piece);
@@ -55,7 +56,7 @@ class Game
 
         //Tableau pour tracker l'état du plateau
         //Si l'emplacement est vide, alors la case vaut 0, sinon elle vaut l'index du bloc
-        int board[12][12];
+        int board[14][12];
 
         //Une fonction pour retourner les coordonnées sur la grille de chaque mino d'un tétromino
         vector<GridCoordinates> getPositionsMinos(Object* piece);

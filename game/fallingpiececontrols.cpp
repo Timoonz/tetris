@@ -18,9 +18,15 @@ void FallingPieceControls::update(float deltaTime, Shader * shader){
 
         if (aPressed && !aWasPressed){
             game->fallingPiece->position.x -= 1.0f;
+            if (game->checkCollision(game->fallingPiece)){
+                game->fallingPiece->position.x += 1.0f;
+            }
         }
         else if (ePressed && !eWasPressed){
             game->fallingPiece->position.x += 1.0f;
+            if (game->checkCollision(game->fallingPiece)){
+                game->fallingPiece->position.x -= 1.0f;
+            }
         }
         else if (sPressed && !sWasPressed){
             game->fallingPiece->position.y -= 1.0f;

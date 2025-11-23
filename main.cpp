@@ -216,13 +216,15 @@ int main()
         if (tetris.fallingPiece) {
             fallTimer += deltaTime;
 
-
             if (fallTimer >= FALL_INTERVAL) {
                 fallTimer = 0.0f;
-                //On check si la nouvelle position pose problème
+
+                // Try to move piece down
                 tetris.fallingPiece->position.y -= 1.0f;
+
                 if (tetris.checkCollision(tetris.fallingPiece)) {
-                    //Toute la gestion se fait dans la fonction lockPiece
+                    // Move back up and lock
+                    tetris.fallingPiece->position.y += 1.0f;
                     tetris.lockPiece(tetris.fallingPiece);
                 }
             }
