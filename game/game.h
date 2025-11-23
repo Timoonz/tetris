@@ -31,6 +31,7 @@ class Game
         void spawn_piece();
         void setShader(Shader* shader);
         bool needNewPiece;
+        bool gameOver;
 
         //L'unique pièce qui tombe
         Forme* fallingPiece;
@@ -62,6 +63,7 @@ class Game
         bool detectFullLine(int y);
         void deleteFullLine(int y);
         void moveDownGame(int yDelete);
+        void checkGameOver(vector<GridCoordinates> tetrominoGridCoordinates);
 };
 
 #endif // GAME_H
