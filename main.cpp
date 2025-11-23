@@ -198,15 +198,12 @@ int main()
             pieceControls.update(deltaTime, &shader);
         }
 
-
-
         controls.update(deltaTime, &shader);
 
         cam.computeMatrices(width, height);
 
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
-
 
         ////////////////On commence par vider les buffers///////////////
         renderer.Clear();
@@ -218,7 +215,6 @@ int main()
 
         for (auto block: tetris.placedMinos){
             Object* piece = block.forme->object;
-            // Object piece = Object(block.geometryBuffer, {}, "", PieceType::MINO);
             glm::mat4 m_piece = piece->getModelMatrix();
             glm::mat4 mvp = p*v* m_piece;
             shader.setUniformMat4f("MVP", mvp);
