@@ -1,11 +1,22 @@
 #include "game.h"
 #include "object.h"
 
+#include <iostream>
+
 
 /////// UNE FONCTION CHECK STATUS QUI CHECK LE STATUS A CHAQUE TOUR DE BOUCLE ?
 
 Game::Game() {
+    //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
     this->stackedPieces = {};
+    this->fallingPiece = nullptr;
+    //On initialise le tableau permettant de tracker les blocs stackés
+    for (int x = 0; x < 12; x++){
+        for (int y = 0; y < 12; y++){
+            this->board[x][y] = 0;
+        }
+    }
+    this->needNewPiece = true;
 }
 
 Game::~Game() {
@@ -14,22 +25,19 @@ Game::~Game() {
     }
 }
 
-
-
 void Game::spawn_piece() {
     //On génère une pièce, donc on a pas besoin d'une nouvelle pièce
     std::pair<vector<glm::vec3>, PieceType> buffer_and_type = this->getRandomTetromino();
     Object* result = new Object(buffer_and_type.first, {}, "", buffer_and_type.second);
-    result->position.y = 12;
+    result->position.y = 12.0f;
+    result->position.x = 0.0f;
     //On stocke le résultat dans l'attribut "pieces" du jeu
     this->fallingPiece = result;
+    this->needNewPiece = false;
 };
 
-void Game::spawn_terrain() {}
 
 std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
-
-
    //Setup du générateur aléatoire
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -41,22 +49,161 @@ std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
     PieceType type;
 
     switch(randomIndex) {
-    case 0: vertex_buffer = line_vertex_buffer_creator();
+    case 0:
+        vertex_buffer = line_vertex_buffer_creator();
         type = PieceType::LINE; break;
-    case 1: vertex_buffer = block_vertex_buffer_creator();
+    case 1:
+        vertex_buffer = block_vertex_buffer_creator();
         type = PieceType::BLOCK; break;
-    case 2: vertex_buffer = tee_vertex_buffer_creator();
+    case 2:
+        vertex_buffer = tee_vertex_buffer_creator();
         type = PieceType::TEE; break;
-    case 3: vertex_buffer = right_snake_vertex_buffer_creator();
+    case 3:
+        vertex_buffer = right_snake_vertex_buffer_creator();
         type = PieceType::RIGHT_SNAKE; break;
-    case 4: vertex_buffer = left_snake_vertex_buffer_creator();
+    case 4:
+        vertex_buffer = left_snake_vertex_buffer_creator();
         type = PieceType::LEFT_SNAKE; break;
-    case 5: vertex_buffer = left_gun_vertex_buffer_creator();
+    case 5:
+        vertex_buffer = left_gun_vertex_buffer_creator();
         type = PieceType::LEFT_GUN; break;
-    case 6: vertex_buffer = right_gun_vertex_buffer_creator();
+    case 6:
+        vertex_buffer = right_gun_vertex_buffer_creator();
         type = PieceType::RIGHT_GUN; break;
     }
 
     //On renvoie la paire du vertex_buffer et du type de pièce
     return std::make_pair(vertex_buffer, type);
 };
+
+
+bool Game::checkCollision(Object* piece){
+    if (piece->position.y <= 0.0f){
+        return true;
+    }
+
+    vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+
+    //On répète le processus pour chaque tétromino
+    for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+        int x_grid = coordinate.x;
+        int y_grid = coordinate.y;
+        int x_board = x_grid + 6;
+
+        //Si y_grid = 0, alors on a touché le bas du terrain
+        if (y_grid <= 0){
+            return true;
+        }
+
+        //Check des limites horizontales du terrain
+        // if (x_board < 0 || x_board >= 12){
+        //     return true;
+        // }
+
+        //On regarde si la case en-dessous n'est pas en dehors de la grille
+        if (y_grid - 1 < 0 || y_grid - 1 >= 12){
+            continue;
+        }
+
+        //On récupère la valeur de la cellule en-dessous
+        int cellValue = this->board[y_grid - 1][x_board];
+
+        //Si la valeur est autre que 0, alors c'est que la cellule est prise: il ya collision
+        if (cellValue != 0){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Game::lockPiece(Object* piece){
+    vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+
+
+    for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+        int x_grid = coordinate.x;
+        int y_grid = coordinate.y;
+        int x_board = x_grid + 6;
+
+        //On check les bords et on crée un nouveau block, que l'on met dans la liste des blocks placés
+        if (y_grid >= 0 && y_grid < 12 && x_board >= 0 && x_board < 12){
+            this->board[y_grid][x_board] = this->placedBlocks.size() + 1;
+
+            Block block;
+            block.position = glm::vec3(x_grid, y_grid, 0);
+            block.owner = piece;
+            this->placedBlocks.push_back(block);
+        }
+        /*else { //Fonction utilisée pour le débugage, je la garde pour l'instant au cas où
+            std::cout << "  -> OUT OF BOUNDS, NOT LOCKED!" << std::endl;
+        }*/
+    }
+
+    //On rajoute à la liste des pièces stackées
+    this->stackedPieces.push_back(this->fallingPiece);
+    //Il n'y a plus de pièce qui tombe
+    this->fallingPiece = nullptr;
+    //On a beesoin d'une nouvelle pièce
+    this->needNewPiece = true;
+}
+
+
+vector<GridCoordinates> Game::getPositionsMinos(Object* piece){
+    int piece_x = (int)round(piece->position.x);
+    int piece_y = (int)round(piece->position.y);
+
+    vector<GridCoordinates> result;
+
+    switch(piece->pieceType){
+    case PieceType::LINE:
+        result.push_back({piece_x,   piece_y, 0});
+        result.push_back({piece_x+1, piece_y, 0});
+        result.push_back({piece_x+2, piece_y, 0});
+        result.push_back({piece_x+3, piece_y, 0});
+        break;
+    case PieceType::BLOCK:
+        result.push_back({piece_x,   piece_y,   0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+1, piece_y+1, 0});
+        result.push_back({piece_x,   piece_y+1, 0});
+        break;
+    case PieceType::TEE:
+        result.push_back({piece_x,   piece_y,   0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+1, piece_y+1, 0});
+        result.push_back({piece_x+2, piece_y,   0});
+        break;
+    case PieceType::RIGHT_SNAKE:
+        result.push_back({piece_x,   piece_y,   0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+1, piece_y+1, 0});
+        result.push_back({piece_x+2, piece_y+1, 0});
+        break;
+    case PieceType::LEFT_SNAKE:
+        result.push_back({piece_x+2, piece_y,   0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+1, piece_y+1, 0});
+        result.push_back({piece_x,   piece_y+1, 0});
+        break;
+    case PieceType::LEFT_GUN:
+        result.push_back({piece_x,   piece_y,   0});
+        result.push_back({piece_x,   piece_y+1, 0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+2, piece_y,   0});
+        break;
+    case PieceType::RIGHT_GUN:
+        result.push_back({piece_x,   piece_y,   0});
+        result.push_back({piece_x+1, piece_y,   0});
+        result.push_back({piece_x+2, piece_y,   0});
+        result.push_back({piece_x+2, piece_y+1, 0});
+        break;
+    default:
+        break;
+    }
+
+    return result;
+}
+
+
+void Game::spawn_terrain() {}
