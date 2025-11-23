@@ -9,7 +9,7 @@ Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
     this->fallingPiece = nullptr;
     //On initialise le tableau permettant de tracker les blocs stackés
-    for (int x = 0; x < 20; x++){
+    for (int x = 0; x < 12; x++){
         for (int y = 0; y < 14; y++){
             this->board[x][y] = 0;
         }
@@ -155,9 +155,12 @@ void Game::lockPiece(Object* piece){
     }
 
     //On scan pour savoir si une ligne est pleine
-    for (int rang = 12; rang > 0; rang--){
-        if (detectLine(rang)){
+    for (int rang = 0; rang < 12; rang++){
+        if (detectFullLine(rang)){
             // std::cout << "LINE " << rang << " FULL\n";
+            deleteFullLine(rang);
+            moveDownGame(rang);
+            rang --; //On désincremente au cas où la ligne du dessus était pleine
         }
     }
 
@@ -226,7 +229,7 @@ vector<GridCoordinates> Game::getPositionsMinos(Object* piece){
     return result;
 }
 
-bool Game::detectLine(int y){
+bool Game::detectFullLine(int y){
     int count = 0;
     for (int x = 0; x <12; x++){
         if (board[y][x] != 0){
@@ -234,6 +237,47 @@ bool Game::detectLine(int y){
         }
     }
     return (count == 10);
+}
+
+void Game::deleteFullLine(int y){
+    //On supprime les minos de la liste des blocks placés
+    //Dans l'ordre inverse pour ne pas sauter des éléments
+    for (int i = placedMinos.size() - 1; i >= 0; i--){
+        Block currentMino = placedMinos[i];
+        if ((int)round(currentMino.position.y) == y){
+            placedMinos.erase(placedMinos.begin() + i);
+            std::cout << currentMino.position.x + 6;
+        }
+    }
+    //On indique au board que les places sont maintenant vides
+    for (int x = 0; x <12; x++){
+        board[y][x] = 0;
+        }
+}
+
+void Game::moveDownGame(int yDelete){
+    //Pour tout les rangs au-dessus du rang ) supprimer, on baisse le rang d'un
+    for (int y = yDelete; y < 11; y++){
+        for (int x = 0; x < 12; x++){
+            board[y][x] = board[y + 1][x];
+        }
+    }
+
+    //Le rang du haut est maintenant vide
+    for (int x = 0; x < 12; x++){
+        board[11][x] = 0;
+    }
+
+    //Puis on descend tout les minos déjà placés de 1
+    for (int i = 0; i < placedMinos.size(); i++){
+        //Si le mino est au-dessus de la ligne supprimée, on le descend de 1
+        if ((int)round(placedMinos[i].position.y) > yDelete){
+            placedMinos[i].position.y -= 1.0f;
+
+            //On reconstruit sa géométrie un rang plus bas
+            placedMinos[i].geometryBuffer = mino_creator(placedMinos[i].position.x, placedMinos[i].position.y, 0.0f);
+        }
+    }
 }
 
 

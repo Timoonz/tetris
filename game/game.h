@@ -48,7 +48,7 @@ class Game
         //Une fonction pour bloquer une pièce une fois qu'elle est rentrée en collision avec une autre
         void lockPiece(Object* piece);
 
-        bool detectLine(int y);
+
 
 
     private:
@@ -60,6 +60,10 @@ class Game
 
         //Une fonction pour retourner les coordonnées sur la grille de chaque mino d'un tétromino
         vector<GridCoordinates> getPositionsMinos(Object* piece);
+
+        bool detectFullLine(int y);
+        void deleteFullLine(int y);
+        void moveDownGame(int yDelete);
 };
 
 #endif // GAME_H

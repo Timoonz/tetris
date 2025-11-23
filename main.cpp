@@ -219,13 +219,12 @@ int main()
             if (fallTimer >= FALL_INTERVAL) {
                 fallTimer = 0.0f;
 
-                // Try to move piece down
+                //On essaie de bouger la pièce vers le bas
                 tetris.fallingPiece->position.y -= 1.0f;
 
                 if (tetris.checkCollision(tetris.fallingPiece)) {
-                    // Move back up and lock
+                    //Si il ya collision, on remet la pièce en haut
                     tetris.fallingPiece->position.y += 1.0f;
-                    // std::cout << "AAAAAAA";
                     tetris.lockPiece(tetris.fallingPiece);
                 }
             }
