@@ -1,12 +1,12 @@
 #include "game.h"
 #include "object.h"
+#include "models/tetrominos.h"
 
 //Pour débugger
 #include <iostream>
 
 Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
-    this->stackedPieces = {};
     this->fallingPiece = nullptr;
     //On initialise le tableau permettant de tracker les blocs stackés
     for (int x = 0; x < 20; x++){
@@ -18,9 +18,9 @@ Game::Game() {
 }
 
 Game::~Game() {
-    for (auto* piece : stackedPieces) {
-        delete piece;
-    }
+    // for (auto* piece : stackedPieces) {
+    //     delete piece;
+    // }
 }
 
 void Game::spawn_piece() {
@@ -49,25 +49,32 @@ std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
     switch(randomIndex) {
     case 0:
         vertex_buffer = line_vertex_buffer_creator();
-        type = PieceType::LINE; break;
+        type = PieceType::LINE;
+        break;
     case 1:
         vertex_buffer = block_vertex_buffer_creator();
-        type = PieceType::BLOCK; break;
+        type = PieceType::BLOCK;
+        break;
     case 2:
         vertex_buffer = tee_vertex_buffer_creator();
-        type = PieceType::TEE; break;
+        type = PieceType::TEE;
+        break;
     case 3:
         vertex_buffer = right_snake_vertex_buffer_creator();
-        type = PieceType::RIGHT_SNAKE; break;
+        type = PieceType::RIGHT_SNAKE;
+        break;
     case 4:
         vertex_buffer = left_snake_vertex_buffer_creator();
-        type = PieceType::LEFT_SNAKE; break;
+        type = PieceType::LEFT_SNAKE;
+        break;
     case 5:
         vertex_buffer = left_gun_vertex_buffer_creator();
-        type = PieceType::LEFT_GUN; break;
+        type = PieceType::LEFT_GUN;
+        break;
     case 6:
         vertex_buffer = right_gun_vertex_buffer_creator();
-        type = PieceType::RIGHT_GUN; break;
+        type = PieceType::RIGHT_GUN;
+        break;
     }
 
     //On renvoie la paire du vertex_buffer et du type de pièce
@@ -97,7 +104,7 @@ bool Game::checkCollision(Object* piece){
         //Seulement si on est dans les clous
         if (y_grid >= 0 && y_grid < 12) {
             if (x_board >= 0 && x_board < 12) {
-                int cellValue = this->board[y_grid][x_board];
+                int cellValue = board[y_grid][x_board];
                 if (cellValue != 0){
                     return true;
                 }
@@ -109,7 +116,7 @@ bool Game::checkCollision(Object* piece){
 }
 
 void Game::lockPiece(Object* piece){
-    vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+    vector<GridCoordinates> tetrominoGridCoordinates = getPositionsMinos(piece);
 
     //On met la pièce sur une coordonée y entière
     fallingPiece->position.y = round(fallingPiece->position.y);
@@ -137,12 +144,13 @@ void Game::lockPiece(Object* piece){
 
         //On check les bords et on crée un nouveau block, que l'on met dans la liste des blocks placés
         if (y_grid >= 0 && y_grid < 12 && x_board >= 0 && x_board < 12){
-            this->board[y_grid][x_board] = this->placedBlocks.size() + 1;
+            board[y_grid][x_board] = placedMinos.size() + 1;
 
             Block block;
             block.position = glm::vec3(x_grid, y_grid, 0);
-            block.owner = piece;
-            this->placedBlocks.push_back(block);
+            block.geometryBuffer = mino_creator(x_grid, y_grid, 0.0f);
+            //block.color = piece;
+            placedMinos.push_back(block);
         }
     }
 
@@ -153,12 +161,12 @@ void Game::lockPiece(Object* piece){
         }
     }
 
-    //On rajoute à la liste des pièces stackées
-    this->stackedPieces.push_back(this->fallingPiece);
+    //On supprime la pièce qui tombe
+    delete(fallingPiece);
     //Il n'y a plus de pièce qui tombe
-    this->fallingPiece = nullptr;
+    fallingPiece = nullptr;
     //On a beesoin d'une nouvelle pièce
-    this->needNewPiece = true;
+    needNewPiece = true;
 }
 
 

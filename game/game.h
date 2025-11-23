@@ -13,7 +13,8 @@
 //Une structure pour tracker tout les minos déjà posés
 struct Block {
     glm::vec3 position;
-    Object* owner;
+    vector<glm::vec3> geometryBuffer;
+    //Color color;
 };
 
 struct GridCoordinates {
@@ -34,11 +35,8 @@ class Game
         //L'unique pièce qui tombe
         Object* fallingPiece;
 
-        //Toutes les pièces qui sont déjà tombées dans le jeu
-        vector<Object*> stackedPieces;
-
         //L'ensemble des minos déjà posés
-        vector<Block> placedBlocks;
+        vector<Block> placedMinos;
 
         bool needNewPiece;
 
