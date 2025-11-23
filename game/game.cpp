@@ -8,14 +8,15 @@
 
 Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
-    this->fallingPiece = nullptr;
+    fallingPiece = nullptr;
     //On initialise le tableau permettant de tracker les blocs stackés
     for (int x = 0; x < 12; x++){
         for (int y = 0; y < 14; y++){
-            this->board[x][y] = 0;
+            board[x][y] = 0;
         }
     }
-    this->needNewPiece = true;
+    needNewPiece = true;
+    gameOver = false;
 }
 
 Game::~Game() {
@@ -94,6 +95,13 @@ void Game::lockPiece(Object* piece){
         fallingPiece->object->position.y += 1.0f;
     }
 
+    //On check pour savoir la piece provoque un game over
+    checkGameOver(tetrominoGridCoordinates);
+    //Le cas échéant, on arrête tout
+    if (gameOver){
+        return;
+    }
+
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
 
         int x_grid = coordinate.x;
@@ -125,6 +133,7 @@ void Game::lockPiece(Object* piece){
             rang --; //On désincremente au cas où la ligne du dessus était pleine
         }
     }
+
 
     //On supprime la pièce qui tombe
     delete(fallingPiece);
@@ -245,4 +254,15 @@ void Game::moveDownGame(int yDelete){
 
 void Game::setShader(Shader* shader){
     this->shader = shader;
+}
+
+void Game::checkGameOver(vector<GridCoordinates> tetrominoGridCoordinates){
+    for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+        if (coordinate.y >= 12){
+            this->gameOver = true;
+            delete(fallingPiece);
+            fallingPiece = nullptr;
+            needNewPiece = false;
+        }
+    }
 }

@@ -115,46 +115,6 @@ int main()
 
     vector<glm::vec3> terrain_vertex_buffer = terrain_creator();
 
-    // vector<glm::vec2> g_uv_buffer_data = {
-    //     glm::vec2(0.000059f, 1.0f-0.000004f),
-    //     glm::vec2(0.000103f, 1.0f-0.336048f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(1.000023f, 1.0f-0.000013f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.999958f, 1.0f-0.336064f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.336024f, 1.0f-0.671877f),
-    //     glm::vec2(0.667969f, 1.0f-0.671889f),
-    //     glm::vec2(1.000023f, 1.0f-0.000013f),
-    //     glm::vec2(0.668104f, 1.0f-0.000013f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.000059f, 1.0f-0.000004f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(0.336098f, 1.0f-0.000071f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(0.336024f, 1.0f-0.671877f),
-    //     glm::vec2(1.000004f, 1.0f-0.671847f),
-    //     glm::vec2(0.999958f, 1.0f-0.336064f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.668104f, 1.0f-0.000013f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(0.668104f, 1.0f-0.000013f),
-    //     glm::vec2(0.336098f, 1.0f-0.000071f),
-    //     glm::vec2(0.000103f, 1.0f-0.336048f),
-    //     glm::vec2(0.000004f, 1.0f-0.671870f),
-    //     glm::vec2(0.336024f, 1.0f-0.671877f),
-    //     glm::vec2(0.000103f, 1.0f-0.336048f),
-    //     glm::vec2(0.336024f, 1.0f-0.671877f),
-    //     glm::vec2(0.335973f, 1.0f-0.335903f),
-    //     glm::vec2(0.667969f, 1.0f-0.671889f),
-    //     glm::vec2(1.000004f, 1.0f-0.671847f),
-    //     glm::vec2(0.667979f, 1.0f-0.335851f)
-
-    // } ;
-
     vector<glm::vec2> g_uv_buffer_data = {};
 
     //Initialisation du terrain
@@ -213,33 +173,35 @@ int main()
         //to rotate the cube
         // o1.rotationAngles.y=currentTime;
 
+        if (!tetris.gameOver){
+            //pour faire tomber la pièce
+            if (tetris.fallingPiece) {
+                fallTimer += deltaTime;
 
-        //pour faire tomber la pièce
-        if (tetris.fallingPiece) {
-            fallTimer += deltaTime;
+                if (fallTimer >= FALL_INTERVAL) {
+                    fallTimer = 0.0f;
 
-            if (fallTimer >= FALL_INTERVAL) {
-                fallTimer = 0.0f;
+                    //On essaie de bouger la pièce vers le bas
+                    tetris.fallingPiece->object->position.y -= 1.0f;
 
-                //On essaie de bouger la pièce vers le bas
-                tetris.fallingPiece->object->position.y -= 1.0f;
-
-                if (tetris.checkCollision(tetris.fallingPiece->object)) {
-                    //Si il ya collision, on remet la pièce en haut
-                    tetris.fallingPiece->object->position.y += 1.0f;
-                    tetris.lockPiece(tetris.fallingPiece->object);
+                    if (tetris.checkCollision(tetris.fallingPiece->object)) {
+                        //Si il ya collision, on remet la pièce en haut
+                        tetris.fallingPiece->object->position.y += 1.0f;
+                        tetris.lockPiece(tetris.fallingPiece->object);
+                    }
                 }
             }
-        }
 
-        if (tetris.needNewPiece) {
-            tetris.spawn_piece();
+            if (tetris.needNewPiece) {
+                tetris.spawn_piece();
+            }
+            pieceControls.update(deltaTime, &shader);
         }
 
 
 
         controls.update(deltaTime, &shader);
-        pieceControls.update(deltaTime, &shader);
+
         cam.computeMatrices(width, height);
 
         v = cam.getViewMatrix();
@@ -270,6 +232,10 @@ int main()
             shader.setUniformMat4f("MVP", mvp_falling);
             shader.setUniform3fv("objectColor", tetris.fallingPiece->color);
             renderer.Draw(va, *tetris.fallingPiece->object, shader);
+        }
+
+        if (tetris.gameOver) {
+            std::cout << "GAME OVER!" << std::endl;
         }
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
