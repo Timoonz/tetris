@@ -13,7 +13,8 @@
 //Une structure pour tracker tout les minos déjà posés
 struct Block {
     glm::vec3 position;
-    Object* owner;
+    vector<glm::vec3> geometryBuffer;
+    //Color color;
 };
 
 struct GridCoordinates {
@@ -34,11 +35,8 @@ class Game
         //L'unique pièce qui tombe
         Object* fallingPiece;
 
-        //Toutes les pièces qui sont déjà tombées dans le jeu
-        vector<Object*> stackedPieces;
-
         //L'ensemble des minos déjà posés
-        vector<Block> placedBlocks;
+        vector<Block> placedMinos;
 
         bool needNewPiece;
 
@@ -51,6 +49,8 @@ class Game
         void lockPiece(Object* piece);
 
 
+
+
     private:
         std::pair<vector<glm::vec3>, PieceType>  getRandomTetromino();
 
@@ -60,6 +60,10 @@ class Game
 
         //Une fonction pour retourner les coordonnées sur la grille de chaque mino d'un tétromino
         vector<GridCoordinates> getPositionsMinos(Object* piece);
+
+        bool detectFullLine(int y);
+        void deleteFullLine(int y);
+        void moveDownGame(int yDelete);
 };
 
 #endif // GAME_H

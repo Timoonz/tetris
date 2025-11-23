@@ -1,12 +1,15 @@
 #include "game.h"
 #include "object.h"
+#include "models/tetrominos.h"
+
+//Pour débugger
+#include <iostream>
 
 Game::Game() {
     //À l'initialisation, il n'y a pas de pièces qui tombent et de pièces déjà stackées
-    this->stackedPieces = {};
     this->fallingPiece = nullptr;
     //On initialise le tableau permettant de tracker les blocs stackés
-    for (int x = 0; x < 20; x++){
+    for (int x = 0; x < 12; x++){
         for (int y = 0; y < 14; y++){
             this->board[x][y] = 0;
         }
@@ -15,9 +18,9 @@ Game::Game() {
 }
 
 Game::~Game() {
-    for (auto* piece : stackedPieces) {
-        delete piece;
-    }
+    // for (auto* piece : stackedPieces) {
+    //     delete piece;
+    // }
 }
 
 void Game::spawn_piece() {
@@ -46,25 +49,32 @@ std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
     switch(randomIndex) {
     case 0:
         vertex_buffer = line_vertex_buffer_creator();
-        type = PieceType::LINE; break;
+        type = PieceType::LINE;
+        break;
     case 1:
         vertex_buffer = block_vertex_buffer_creator();
-        type = PieceType::BLOCK; break;
+        type = PieceType::BLOCK;
+        break;
     case 2:
         vertex_buffer = tee_vertex_buffer_creator();
-        type = PieceType::TEE; break;
+        type = PieceType::TEE;
+        break;
     case 3:
         vertex_buffer = right_snake_vertex_buffer_creator();
-        type = PieceType::RIGHT_SNAKE; break;
+        type = PieceType::RIGHT_SNAKE;
+        break;
     case 4:
         vertex_buffer = left_snake_vertex_buffer_creator();
-        type = PieceType::LEFT_SNAKE; break;
+        type = PieceType::LEFT_SNAKE;
+        break;
     case 5:
         vertex_buffer = left_gun_vertex_buffer_creator();
-        type = PieceType::LEFT_GUN; break;
+        type = PieceType::LEFT_GUN;
+        break;
     case 6:
         vertex_buffer = right_gun_vertex_buffer_creator();
-        type = PieceType::RIGHT_GUN; break;
+        type = PieceType::RIGHT_GUN;
+        break;
     }
 
     //On renvoie la paire du vertex_buffer et du type de pièce
@@ -94,7 +104,7 @@ bool Game::checkCollision(Object* piece){
         //Seulement si on est dans les clous
         if (y_grid >= 0 && y_grid < 12) {
             if (x_board >= 0 && x_board < 12) {
-                int cellValue = this->board[y_grid][x_board];
+                int cellValue = board[y_grid][x_board];
                 if (cellValue != 0){
                     return true;
                 }
@@ -106,8 +116,7 @@ bool Game::checkCollision(Object* piece){
 }
 
 void Game::lockPiece(Object* piece){
-
-    vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+    vector<GridCoordinates> tetrominoGridCoordinates = getPositionsMinos(piece);
 
     //On met la pièce sur une coordonée y entière
     fallingPiece->position.y = round(fallingPiece->position.y);
@@ -127,8 +136,6 @@ void Game::lockPiece(Object* piece){
         fallingPiece->position.y += 1.0f;
     }
 
-
-
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
 
         int x_grid = coordinate.x;
@@ -137,22 +144,32 @@ void Game::lockPiece(Object* piece){
 
         //On check les bords et on crée un nouveau block, que l'on met dans la liste des blocks placés
         if (y_grid >= 0 && y_grid < 12 && x_board >= 0 && x_board < 12){
-            this->board[y_grid][x_board] = this->placedBlocks.size() + 1;
+            board[y_grid][x_board] = placedMinos.size() + 1;
 
             Block block;
             block.position = glm::vec3(x_grid, y_grid, 0);
-            block.owner = piece;
-            this->placedBlocks.push_back(block);
+            block.geometryBuffer = mino_creator(x_grid, y_grid, 0.0f);
+            //block.color = piece;
+            placedMinos.push_back(block);
         }
-
     }
 
-    //On rajoute à la liste des pièces stackées
-    this->stackedPieces.push_back(this->fallingPiece);
+    //On scan pour savoir si une ligne est pleine
+    for (int rang = 0; rang < 12; rang++){
+        if (detectFullLine(rang)){
+            // std::cout << "LINE " << rang << " FULL\n";
+            deleteFullLine(rang);
+            moveDownGame(rang);
+            rang --; //On désincremente au cas où la ligne du dessus était pleine
+        }
+    }
+
+    //On supprime la pièce qui tombe
+    delete(fallingPiece);
     //Il n'y a plus de pièce qui tombe
-    this->fallingPiece = nullptr;
+    fallingPiece = nullptr;
     //On a beesoin d'une nouvelle pièce
-    this->needNewPiece = true;
+    needNewPiece = true;
 }
 
 
@@ -210,6 +227,57 @@ vector<GridCoordinates> Game::getPositionsMinos(Object* piece){
     }
 
     return result;
+}
+
+bool Game::detectFullLine(int y){
+    int count = 0;
+    for (int x = 0; x <12; x++){
+        if (board[y][x] != 0){
+            count++;
+        }
+    }
+    return (count == 10);
+}
+
+void Game::deleteFullLine(int y){
+    //On supprime les minos de la liste des blocks placés
+    //Dans l'ordre inverse pour ne pas sauter des éléments
+    for (int i = placedMinos.size() - 1; i >= 0; i--){
+        Block currentMino = placedMinos[i];
+        if ((int)round(currentMino.position.y) == y){
+            placedMinos.erase(placedMinos.begin() + i);
+            std::cout << currentMino.position.x + 6;
+        }
+    }
+    //On indique au board que les places sont maintenant vides
+    for (int x = 0; x <12; x++){
+        board[y][x] = 0;
+        }
+}
+
+void Game::moveDownGame(int yDelete){
+    //Pour tout les rangs au-dessus du rang ) supprimer, on baisse le rang d'un
+    for (int y = yDelete; y < 11; y++){
+        for (int x = 0; x < 12; x++){
+            board[y][x] = board[y + 1][x];
+        }
+    }
+
+    //Le rang du haut est maintenant vide
+    for (int x = 0; x < 12; x++){
+        board[11][x] = 0;
+    }
+
+    //Puis on descend tout les minos déjà placés de 1
+    for (int i = 0; i < placedMinos.size(); i++){
+        //Si le mino est au-dessus de la ligne supprimée, on le descend de 1
+        if ((int)round(placedMinos[i].position.y) > yDelete){
+            placedMinos[i].position.y -= 1.0f;
+
+            //On reconstruit sa géométrie un rang plus bas
+            placedMinos[i].geometryBuffer = mino_creator(placedMinos[i].position.x, placedMinos[i].position.y, 0.0f);
+        }
+    }
 }
 
 

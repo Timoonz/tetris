@@ -219,11 +219,11 @@ int main()
             if (fallTimer >= FALL_INTERVAL) {
                 fallTimer = 0.0f;
 
-                // Try to move piece down
+                //On essaie de bouger la pièce vers le bas
                 tetris.fallingPiece->position.y -= 1.0f;
 
                 if (tetris.checkCollision(tetris.fallingPiece)) {
-                    // Move back up and lock
+                    //Si il ya collision, on remet la pièce en haut
                     tetris.fallingPiece->position.y += 1.0f;
                     tetris.lockPiece(tetris.fallingPiece);
                 }
@@ -251,11 +251,12 @@ int main()
         shader.setUniformMat4f("MVP", mvp_terrain);
         renderer.Draw(va, terrain, shader);
 
-        for (auto* piece: tetris.stackedPieces){
-            glm::mat4 m_piece = piece->getModelMatrix();
+        for (auto block: tetris.placedMinos){
+            Object piece = Object(block.geometryBuffer, {}, "", PieceType::MINO);
+            glm::mat4 m_piece = piece.getModelMatrix();
             glm::mat4 mvp = p*v* m_piece;
             shader.setUniformMat4f("MVP", mvp);
-            renderer.Draw(va, *piece, shader);
+            renderer.Draw(va, piece, shader);
         };
 
         if (tetris.fallingPiece) {
