@@ -118,10 +118,31 @@ bool Game::checkCollision(Object* piece){
 }
 
 void Game::lockPiece(Object* piece){
+
     vector<GridCoordinates> tetrominoGridCoordinates = this->getPositionsMinos(piece);
+
+    //On met la pièce sur une coordonée y entière
+    fallingPiece->position.y = round(fallingPiece->position.y);
+    //En revanche si la pièce rentre en collision avec le bas du plateau, on la remet un cran au-dessus
+    bool onFloor = false;
+    for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+        int y_grid = coordinate.y;
+        if (y_grid == 0){
+            onFloor = true;
+            break;
+        }
+    }
+    if (onFloor){
+        for(GridCoordinates& coordinate : tetrominoGridCoordinates){
+            coordinate.y += 1;
+        }
+        fallingPiece->position.y += 1.0f;
+    }
+
 
 
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
+
         int x_grid = coordinate.x;
         int y_grid = coordinate.y;
         int x_board = x_grid + 6;

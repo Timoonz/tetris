@@ -27,7 +27,7 @@ using namespace std;
 
 Game tetris;
 
-
+//Pour faire du mouvement incrémental
 float lastTime = glfwGetTime();
 float currentTime, deltaTime;
 float fallTimer = 0.0f;
@@ -55,7 +55,7 @@ int main()
 
 /////////////////////////Ouverture de la fenêtre/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //définition de la taille de la fenêtre
+    //Définition de la taille de la fenêtre
     int width=600;
     int height=600;
 
@@ -159,7 +159,7 @@ int main()
     Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "", PieceType::TERRAIN);
 
 
-    //On spawn une unique pièce pour commencer
+    //On génère une unique pièce pour commencer
     tetris.spawn_piece();
 
 /////////////////////////Création de la matrice MVP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,18 +222,7 @@ int main()
                 //On check si la nouvelle position pose problème
                 tetris.fallingPiece->position.y -= 1.0f;
                 if (tetris.checkCollision(tetris.fallingPiece)) {
-                    //Si oui, on la remet à son étape précédente
-                    tetris.fallingPiece->position.y += deltaTime * 2.0f;
-
-                    //On la remet à une position entière (pour éviter les chevauchements)
-                    if (round(tetris.fallingPiece->position.y) == 0){
-                        tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y) +1;
-                    }
-                    else {
-                        tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y);
-                    }
-
-                    //Et enfin on la lock
+                    //Toute la gestion se fait dans la fonction lockPiece
                     tetris.lockPiece(tetris.fallingPiece);
                 }
             }

@@ -26,7 +26,6 @@ void FallingPieceControls::update(float deltaTime, Shader * shader){
             game->fallingPiece->position.y -= 1.0f;
             if (game->checkCollision(game->fallingPiece)) {
                 game->fallingPiece->position.y += 1.0f;
-                game->lockPiece(game->fallingPiece);
             }
         }
 
