@@ -148,11 +148,8 @@ int main()
     vector<glm::vec2> g_uv_buffer_data = {};
 
     //Initialisation du terrain
-    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "");
-    //Initialisation de l'objet qui tombe
-    // Object o2 = tetris.spawn_piece();
+    Object terrain(terrain_vertex_buffer, g_uv_buffer_data, "", PieceType::TERRAIN);
 
-    // o2.position.y = 12;
 
     //On spawn une unique pièce pour commencer
     tetris.spawn_piece();
@@ -176,12 +173,6 @@ int main()
     glm::mat4 mvp_falling = p*v*m_falling;
     shader.setUniformMat4f("MVP", mvp_falling);
 
-    // for (auto* piece: tetris.pieces){
-    //     piece->position.y = 12;
-    //     glm::mat4 m_piece = piece->getModelMatrix();
-    //     glm::mat4 mvp = p*v* m_piece;
-    //     shader.setUniformMat4f("MVP", mvp);
-    // };
 
 
 /////////////////////////Boucle de rendu/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,14 +203,32 @@ int main()
         // o1.rotationAngles.y=currentTime;
 
 
-        // pour faire tomber la pièce
-        if (tetris.fallingPiece->position.y > 1){
-                tetris.fallingPiece->position.y -= currentTime*0.005;
+        //pour faire tomber la pièce
+        if (tetris.fallingPiece) {
+            //On essaie de faire tomber la pièce
+            tetris.fallingPiece->position.y -= deltaTime * 2.0f;
+
+            //On check si la nouvelle position posse problème
+            if (tetris.checkCollision(tetris.fallingPiece)) {
+                //Si oui, on la remet à son étape précédente
+                tetris.fallingPiece->position.y += deltaTime * 2.0f;
+
+                //On la remet à une position entière (pour éviter les chevauchements)
+                if (round(tetris.fallingPiece->position.y) == 1){
+                    tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y);
+                }
+                else {
+                    tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y) - 1;
+                }
+
+                //Et enfin on la lock
+                tetris.lockPiece(tetris.fallingPiece);
             }
-        else {
-            tetris.stackedPieces.push_back(tetris.fallingPiece);
-                tetris.spawn_piece();
-        };
+        }
+
+        if (tetris.needNewPiece) {
+            tetris.spawn_piece();
+        }
 
 
 
@@ -228,7 +237,6 @@ int main()
 
         v = cam.getViewMatrix();
         p = cam.getProjectionMatrix();
-
 
 
         ////////////////On commence par vider les buffers///////////////
@@ -245,12 +253,12 @@ int main()
             renderer.Draw(va, *piece, shader);
         };
 
-        m_falling = tetris.fallingPiece->getModelMatrix();
-        mvp_falling = p*v*m_falling;
-        shader.setUniformMat4f("MVP", mvp_falling);
-        renderer.Draw(va, *tetris.fallingPiece, shader);
-
-
+        if (tetris.fallingPiece) {
+            m_falling = tetris.fallingPiece->getModelMatrix();
+            mvp_falling = p*v*m_falling;
+            shader.setUniformMat4f("MVP", mvp_falling);
+            renderer.Draw(va, *tetris.fallingPiece, shader);
+        }
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////
         //Swap buffers : frame refresh
