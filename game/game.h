@@ -9,12 +9,12 @@
 #include "models/terrain.h"
 #include "models/tetrominos.h"
 #include "object.h"
+#include "game/forme.h"
 
 //Une structure pour tracker tout les minos déjà posés
 struct Block {
     glm::vec3 position;
-    vector<glm::vec3> geometryBuffer;
-    //Color color;
+    Forme* forme;
 };
 
 struct GridCoordinates {
@@ -28,22 +28,19 @@ class Game
     public:
         Game();
         ~Game();
-
         void spawn_piece();
-        void spawn_terrain();
+        void setShader(Shader* shader);
+        bool needNewPiece;
 
         //L'unique pièce qui tombe
-        Object* fallingPiece;
+        Forme* fallingPiece;
 
         //L'ensemble des minos déjà posés
         vector<Block> placedMinos;
 
-        bool needNewPiece;
-
         //Une fonction pour checker si une pièce (celle qui tombe)
         //rentre en collision avec celles déjà stackées et le bord du terrain
         bool checkCollision(Object* piece);
-
 
         //Une fonction pour bloquer une pièce une fois qu'elle est rentrée en collision avec une autre
         void lockPiece(Object* piece);
@@ -51,9 +48,10 @@ class Game
 
 
 
-    private:
-        std::pair<vector<glm::vec3>, PieceType>  getRandomTetromino();
 
+    private:
+
+        Shader* shader;
         //Tableau pour tracker l'état du plateau
         //Si l'emplacement est vide, alors la case vaut 0, sinon elle vaut l'index du bloc
         int board[14][12];

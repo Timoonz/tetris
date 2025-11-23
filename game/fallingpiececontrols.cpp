@@ -16,22 +16,23 @@ void FallingPieceControls::update(float deltaTime, Shader * shader){
         bool ePressed = glfwGetKey(m_Window, GLFW_KEY_E) == GLFW_PRESS;
         bool sPressed = glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS;
 
+        Object *fallingPiece = game->fallingPiece->object;
         if (aPressed && !aWasPressed){
-            game->fallingPiece->position.x -= 1.0f;
-            if (game->checkCollision(game->fallingPiece)){
-                game->fallingPiece->position.x += 1.0f;
+            fallingPiece->position.x -= 1.0f;
+            if (game->checkCollision(fallingPiece)){
+                fallingPiece->position.x += 1.0f;
             }
         }
         else if (ePressed && !eWasPressed){
-            game->fallingPiece->position.x += 1.0f;
-            if (game->checkCollision(game->fallingPiece)){
-                game->fallingPiece->position.x -= 1.0f;
+            fallingPiece->position.x += 1.0f;
+            if (game->checkCollision(fallingPiece)){
+                fallingPiece->position.x -= 1.0f;
             }
         }
         else if (sPressed && !sWasPressed){
-            game->fallingPiece->position.y -= 1.0f;
-            if (game->checkCollision(game->fallingPiece)) {
-                game->fallingPiece->position.y += 1.0f;
+            fallingPiece->position.y -= 1.0f;
+            if (game->checkCollision(fallingPiece)) {
+                fallingPiece->position.y += 1.0f;
             }
         }
 

@@ -1,6 +1,7 @@
 #include "game.h"
 #include "object.h"
 #include "models/tetrominos.h"
+#include "game/forme.h"
 
 //Pour débugger
 #include <iostream>
@@ -18,68 +19,25 @@ Game::Game() {
 }
 
 Game::~Game() {
-    // for (auto* piece : stackedPieces) {
-    //     delete piece;
-    // }
+    delete fallingPiece;
 }
 
 void Game::spawn_piece() {
-    //On génère une pièce, donc on a pas besoin d'une nouvelle pièce
-    std::pair<vector<glm::vec3>, PieceType> buffer_and_type = this->getRandomTetromino();
-    Object* result = new Object(buffer_and_type.first, {}, "", buffer_and_type.second);
-    result->position.y = 12.0f;
-    result->position.x = 0.0f;
+    std::pair<vector<glm::vec3>, PieceType> buffer_and_type = getRandomTetromino();
+    glm::vec3 color = glm::vec3(
+        (float)rand() / float(RAND_MAX),
+        (float)rand() / float(RAND_MAX),
+        (float)rand() / float(RAND_MAX));
+    Forme* result = new Forme(buffer_and_type.first, buffer_and_type.second, color);
+    result->object->position.y = 12.0f;
+    result->object->position.x = 0.0f;
     //On stocke le résultat dans l'attribut "pieces" du jeu
     this->fallingPiece = result;
     this->needNewPiece = false;
 };
 
 
-std::pair<vector<glm::vec3>, PieceType> Game::getRandomTetromino() {
-   //Setup du générateur aléatoire
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 6);
 
-    //Choisir aléatoirement une fonction de création de vertex
-    int randomIndex = dis(gen);
-    vector<glm::vec3> vertex_buffer;
-    PieceType type;
-
-    switch(randomIndex) {
-    case 0:
-        vertex_buffer = line_vertex_buffer_creator();
-        type = PieceType::LINE;
-        break;
-    case 1:
-        vertex_buffer = block_vertex_buffer_creator();
-        type = PieceType::BLOCK;
-        break;
-    case 2:
-        vertex_buffer = tee_vertex_buffer_creator();
-        type = PieceType::TEE;
-        break;
-    case 3:
-        vertex_buffer = right_snake_vertex_buffer_creator();
-        type = PieceType::RIGHT_SNAKE;
-        break;
-    case 4:
-        vertex_buffer = left_snake_vertex_buffer_creator();
-        type = PieceType::LEFT_SNAKE;
-        break;
-    case 5:
-        vertex_buffer = left_gun_vertex_buffer_creator();
-        type = PieceType::LEFT_GUN;
-        break;
-    case 6:
-        vertex_buffer = right_gun_vertex_buffer_creator();
-        type = PieceType::RIGHT_GUN;
-        break;
-    }
-
-    //On renvoie la paire du vertex_buffer et du type de pièce
-    return std::make_pair(vertex_buffer, type);
-};
 
 
 bool Game::checkCollision(Object* piece){
@@ -119,7 +77,7 @@ void Game::lockPiece(Object* piece){
     vector<GridCoordinates> tetrominoGridCoordinates = getPositionsMinos(piece);
 
     //On met la pièce sur une coordonée y entière
-    fallingPiece->position.y = round(fallingPiece->position.y);
+    fallingPiece->object->position.y = round(fallingPiece->object->position.y);
     //En revanche si la pièce rentre en collision avec le bas du plateau, on la remet un cran au-dessus
     bool onFloor = false;
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
@@ -133,7 +91,7 @@ void Game::lockPiece(Object* piece){
         for(GridCoordinates& coordinate : tetrominoGridCoordinates){
             coordinate.y += 1;
         }
-        fallingPiece->position.y += 1.0f;
+        fallingPiece->object->position.y += 1.0f;
     }
 
     for(const GridCoordinates& coordinate : tetrominoGridCoordinates){
@@ -148,8 +106,12 @@ void Game::lockPiece(Object* piece){
 
             Block block;
             block.position = glm::vec3(x_grid, y_grid, 0);
-            block.geometryBuffer = mino_creator(x_grid, y_grid, 0.0f);
-            //block.color = piece;
+            std::vector<glm::vec3> vertexBuffer = mino_creator(x_grid, y_grid, 0.0f);
+            PieceType type = PieceType::MINO;
+            glm::vec3 color = fallingPiece->color;
+            Forme* forme = new Forme(vertexBuffer, type, color);
+
+            block.forme = forme;
             placedMinos.push_back(block);
         }
     }
@@ -245,6 +207,7 @@ void Game::deleteFullLine(int y){
     for (int i = placedMinos.size() - 1; i >= 0; i--){
         Block currentMino = placedMinos[i];
         if ((int)round(currentMino.position.y) == y){
+            delete currentMino.forme;
             placedMinos.erase(placedMinos.begin() + i);
             std::cout << currentMino.position.x + 6;
         }
@@ -275,10 +238,11 @@ void Game::moveDownGame(int yDelete){
             placedMinos[i].position.y -= 1.0f;
 
             //On reconstruit sa géométrie un rang plus bas
-            placedMinos[i].geometryBuffer = mino_creator(placedMinos[i].position.x, placedMinos[i].position.y, 0.0f);
+            placedMinos[i].forme->object->position.y -= 1.0f;
         }
     }
 }
 
-
-void Game::spawn_terrain() {}
+void Game::setShader(Shader* shader){
+    this->shader = shader;
+}
