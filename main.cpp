@@ -12,6 +12,7 @@
 #include "renderer.h"
 #include "camera.h"
 #include "navigationcontrols.h"
+#include "game/fallingpiececontrols.h"
 
 
 //Les modèles
@@ -25,6 +26,12 @@ using namespace std;
 
 
 Game tetris;
+
+
+float lastTime = glfwGetTime();
+float currentTime, deltaTime;
+float fallTimer = 0.0f;
+const float FALL_INTERVAL = 0.7f;
 
 int main()
 {
@@ -100,6 +107,7 @@ int main()
 
     Camera cam(width, height);
     NavigationControls controls(window, &cam);
+    FallingPieceControls pieceControls(window, &cam, &tetris);
 
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -199,30 +207,35 @@ int main()
         deltaTime = currentTime-lastTime;
         lastTime = currentTime;
 
+
         //to rotate the cube
         // o1.rotationAngles.y=currentTime;
 
 
         //pour faire tomber la pièce
         if (tetris.fallingPiece) {
-            //On essaie de faire tomber la pièce
-            tetris.fallingPiece->position.y -= deltaTime * 2.0f;
+            fallTimer += deltaTime;
 
-            //On check si la nouvelle position posse problème
-            if (tetris.checkCollision(tetris.fallingPiece)) {
-                //Si oui, on la remet à son étape précédente
-                tetris.fallingPiece->position.y += deltaTime * 2.0f;
 
-                //On la remet à une position entière (pour éviter les chevauchements)
-                if (round(tetris.fallingPiece->position.y) == 1){
-                    tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y);
+            if (fallTimer >= FALL_INTERVAL) {
+                fallTimer = 0.0f;
+                //On check si la nouvelle position pose problème
+                tetris.fallingPiece->position.y -= 1.0f;
+                if (tetris.checkCollision(tetris.fallingPiece)) {
+                    //Si oui, on la remet à son étape précédente
+                    tetris.fallingPiece->position.y += deltaTime * 2.0f;
+
+                    //On la remet à une position entière (pour éviter les chevauchements)
+                    if (round(tetris.fallingPiece->position.y) == 0){
+                        tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y) +1;
+                    }
+                    else {
+                        tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y);
+                    }
+
+                    //Et enfin on la lock
+                    tetris.lockPiece(tetris.fallingPiece);
                 }
-                else {
-                    tetris.fallingPiece->position.y = round(tetris.fallingPiece->position.y) - 1;
-                }
-
-                //Et enfin on la lock
-                tetris.lockPiece(tetris.fallingPiece);
             }
         }
 
@@ -233,6 +246,7 @@ int main()
 
 
         controls.update(deltaTime, &shader);
+        pieceControls.update(deltaTime, &shader);
         cam.computeMatrices(width, height);
 
         v = cam.getViewMatrix();

@@ -18,7 +18,6 @@ file(GLOB SRC_FILES
 
 
 add_executable(tp_tetris ${SRC_FILES}
-
 )
 include(GNUInstallDirs)
 
