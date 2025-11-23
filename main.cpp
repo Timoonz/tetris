@@ -109,6 +109,8 @@ int main()
     NavigationControls controls(window, &cam);
     FallingPieceControls pieceControls(window, &cam, &tetris);
 
+    tetris.setShader(&shader);
+
 /////////////////////////Création des formes à afficher/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     vector<glm::vec3> terrain_vertex_buffer = terrain_creator();
@@ -177,7 +179,7 @@ int main()
     shader.setUniformMat4f("MVP", mvp_terrain);
 
     //Pour la pièce qui tombe
-    glm::mat4 m_falling = tetris.fallingPiece->getModelMatrix();
+    glm::mat4 m_falling = tetris.fallingPiece->object->getModelMatrix();
     glm::mat4 mvp_falling = p*v*m_falling;
     shader.setUniformMat4f("MVP", mvp_falling);
 
@@ -220,12 +222,12 @@ int main()
                 fallTimer = 0.0f;
 
                 //On essaie de bouger la pièce vers le bas
-                tetris.fallingPiece->position.y -= 1.0f;
+                tetris.fallingPiece->object->position.y -= 1.0f;
 
-                if (tetris.checkCollision(tetris.fallingPiece)) {
+                if (tetris.checkCollision(tetris.fallingPiece->object)) {
                     //Si il ya collision, on remet la pièce en haut
-                    tetris.fallingPiece->position.y += 1.0f;
-                    tetris.lockPiece(tetris.fallingPiece);
+                    tetris.fallingPiece->object->position.y += 1.0f;
+                    tetris.lockPiece(tetris.fallingPiece->object);
                 }
             }
         }
@@ -249,21 +251,25 @@ int main()
         m_terrain = terrain.getModelMatrix();
         mvp_terrain = p*v*m_terrain;
         shader.setUniformMat4f("MVP", mvp_terrain);
+        shader.setUniform3fv("objectColor", glm::vec3(0.3f, 0.3f, 0.3f));
         renderer.Draw(va, terrain, shader);
 
         for (auto block: tetris.placedMinos){
-            Object piece = Object(block.geometryBuffer, {}, "", PieceType::MINO);
-            glm::mat4 m_piece = piece.getModelMatrix();
+            Object* piece = block.forme->object;
+            // Object piece = Object(block.geometryBuffer, {}, "", PieceType::MINO);
+            glm::mat4 m_piece = piece->getModelMatrix();
             glm::mat4 mvp = p*v* m_piece;
             shader.setUniformMat4f("MVP", mvp);
-            renderer.Draw(va, piece, shader);
+            shader.setUniform3fv("objectColor", block.forme->color);
+            renderer.Draw(va, *piece, shader);
         };
 
         if (tetris.fallingPiece) {
-            m_falling = tetris.fallingPiece->getModelMatrix();
+            m_falling = tetris.fallingPiece->object->getModelMatrix();
             mvp_falling = p*v*m_falling;
             shader.setUniformMat4f("MVP", mvp_falling);
-            renderer.Draw(va, *tetris.fallingPiece, shader);
+            shader.setUniform3fv("objectColor", tetris.fallingPiece->color);
+            renderer.Draw(va, *tetris.fallingPiece->object, shader);
         }
 
         ////////////////Partie rafraichissement de l'image et des évènements///////////////

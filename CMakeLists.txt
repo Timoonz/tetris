@@ -14,6 +14,7 @@ file(GLOB SRC_FILES
     "models/*.cpp"
     "game/*.h"
     "game/*.cpp"
+    "shaders/*"
 )
 
 
