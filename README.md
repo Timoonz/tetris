@@ -6,3 +6,6 @@
 Le joueur peut faire bouger le tétromino tombant avec A/E (droite/gauche) et S (vers le bas).
 En revanche, il ne peut pas effectuer de rotation sur les pièces.
 La partie se termine quand une pièce posée dépasse la hauteur du plateau.
+
+### Note
+Ce projet a été effectué sur QtCreator, avec Qt en versio 5.12.2.
